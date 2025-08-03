@@ -15,6 +15,12 @@ public class TodoApiClient(HttpClient httpClient)
         return await httpClient.GetFromJsonAsync<TodoItem>($"/todos/{id}", cancellationToken);
     }
     
+    public async Task<RankedTodoItem[]> Search(string search, CancellationToken cancellationToken = default)
+    {
+        var items = await httpClient.GetFromJsonAsync<List<RankedTodoItem>>($"/todos/search?query={Uri.EscapeDataString(search)}", cancellationToken);
+        return items?.ToArray() ?? [];
+    }
+    
     public async Task<TodoItem?> Create(CreateTodoItem item, CancellationToken cancellationToken = default)
     {
         var response = await httpClient.PostAsJsonAsync("/todos", item, cancellationToken);

@@ -72,6 +72,10 @@ app.MapGet("/todos", async ([FromServices] ITodoService service, ILogger<Program
         return Results.Ok(TodoBogus.Generate());
     }
 });
+app.MapGet("/todos/search", async ([FromQuery] string query, [FromServices] ITodoService service) =>
+{
+    return Results.Ok(await service.SearchTodos(query));
+});
     
 app.MapGet("/todos/{id:int}", async (int id, [FromServices] ITodoService service) =>
 {

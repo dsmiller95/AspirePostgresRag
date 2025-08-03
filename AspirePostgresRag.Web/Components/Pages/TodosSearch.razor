@@ -1,0 +1,79 @@
+﻿@page "/todos/search"
+@using AspirePostgresRag.Models.TodoItems
+@using Microsoft.AspNetCore.Mvc
+
+@inject TodoApiClient TodoApi
+@inject ILogger<Todos> Logger
+@inject NavigationManager NavigationManager
+
+<PageTitle>Todos search</PageTitle>
+
+<h1>Todo Search</h1>
+
+<p>This component demonstrates searching over todos with RAG.</p>
+
+<p>Searching for @SearchTerm ...</p>
+
+<p>
+    <form @onsubmit="OnSearchSubmit">
+        <InputText @bind-Value="dummyGarbageNameDoNotUse" placeholder="Search todos..." />
+        <button type="submit">Search</button>
+    </form>
+</p>
+
+@if (todos == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Title</th>
+            <th>Completed</th>
+        </tr>
+        </thead>
+        
+        <tbody>
+        @foreach (var todo in todos)
+        {
+            <tr>
+                <td>@todo.Score</td>
+                <td>@todo.Title</td>
+                <td>
+                    <input id="@todo.Id" type="checkbox"
+                           checked="@todo.IsCompleted"
+                           disabled/>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public string SearchTerm { get; set; } = string.Empty;
+
+    private string dummyGarbageNameDoNotUse = "";
+    private RankedTodoItem[]? todos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        dummyGarbageNameDoNotUse = SearchTerm;
+        Logger.LogInformation("Searching for {Term}", SearchTerm);
+        todos = await TodoApi.Search(SearchTerm);
+        Logger.LogInformation("Searched for {Term}, loaded {Count} todos", SearchTerm, todos.Length);
+    }
+
+    private void OnSearchSubmit()
+    {
+        Logger.LogInformation("Submitting search for {Term}", dummyGarbageNameDoNotUse);
+        var uri = $"/todos/search?SearchTerm={Uri.EscapeDataString(dummyGarbageNameDoNotUse)}";
+        Logger.LogInformation("Navigating to {Uri}", uri);
+        NavigationManager.NavigateTo(uri);
+    }
+}

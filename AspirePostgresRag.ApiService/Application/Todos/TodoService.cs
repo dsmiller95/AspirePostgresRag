@@ -15,7 +15,7 @@ public interface ITodoService
     Task<TodoItem> UpdateTodo(int id, UpdateTodoItemCompleted updatedTodo);
     Task<bool> DeleteTodo(int id);
     
-    Task<List<TodoItem>> SearchTodos(string search);
+    Task<List<RankedTodoItem>> SearchTodos(string search);
 }
 
 public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) : ITodoService
@@ -79,14 +79,22 @@ public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) :
         return true;
     }
 
-    public async Task<List<TodoItem>> SearchTodos(string search)
+    public async Task<List<RankedTodoItem>> SearchTodos(string search)
     {
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            return (await GetTodos())
+                .Select(x => RankedTodoItem.From(x, 0))
+                .Take(10)
+                .ToList();
+        }
         var embedding = await embeddingService.GetEmbeddingAsync(search);
         var vector = new Vector(embedding);
         var results = await db.TodoItems
-            .OrderBy(x => x.Embedding.L2Distance(vector))
+            .Select(x => new { DbItem = x, Distance = x.Embedding.L2Distance(vector) })
+            .OrderBy(x => x.Distance)
             .Take(10)
-            .Select(x => x.ToDomain())
+            .Select(x => RankedTodoItem.From(x.DbItem.ToDomain(), x.Distance))
             .ToListAsync();
         
         return results;
