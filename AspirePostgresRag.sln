@@ -1,0 +1,42 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.0.0
+MinimumVisualStudioVersion = 17.8.0.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspirePostgresRag.AppHost", "AspirePostgresRag.AppHost\AspirePostgresRag.AppHost.csproj", "{E79316E6-0F5E-4944-BA7F-13C5765301C7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspirePostgresRag.ServiceDefaults", "AspirePostgresRag.ServiceDefaults\AspirePostgresRag.ServiceDefaults.csproj", "{D04BB49E-9601-4FA8-BAB7-2EACC89984D4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspirePostgresRag.ApiService", "AspirePostgresRag.ApiService\AspirePostgresRag.ApiService.csproj", "{D04E4B86-BB0B-4B7D-A0AD-08C081534FC7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspirePostgresRag.Web", "AspirePostgresRag.Web\AspirePostgresRag.Web.csproj", "{88438071-A923-4A20-B0B4-A85CC171B5EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E79316E6-0F5E-4944-BA7F-13C5765301C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E79316E6-0F5E-4944-BA7F-13C5765301C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E79316E6-0F5E-4944-BA7F-13C5765301C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E79316E6-0F5E-4944-BA7F-13C5765301C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D04BB49E-9601-4FA8-BAB7-2EACC89984D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D04BB49E-9601-4FA8-BAB7-2EACC89984D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D04BB49E-9601-4FA8-BAB7-2EACC89984D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D04BB49E-9601-4FA8-BAB7-2EACC89984D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D04E4B86-BB0B-4B7D-A0AD-08C081534FC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D04E4B86-BB0B-4B7D-A0AD-08C081534FC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D04E4B86-BB0B-4B7D-A0AD-08C081534FC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D04E4B86-BB0B-4B7D-A0AD-08C081534FC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88438071-A923-4A20-B0B4-A85CC171B5EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88438071-A923-4A20-B0B4-A85CC171B5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88438071-A923-4A20-B0B4-A85CC171B5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88438071-A923-4A20-B0B4-A85CC171B5EF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8E38E613-882C-4825-8A40-E0CB6B3F360B}
+	EndGlobalSection
+EndGlobal
