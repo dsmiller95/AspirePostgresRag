@@ -10,6 +10,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspirePostgresRag.ApiServic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AspirePostgresRag.Web", "AspirePostgresRag.Web\AspirePostgresRag.Web.csproj", "{88438071-A923-4A20-B0B4-A85CC171B5EF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspirePostgresRag.Domain", "AspirePostgresRag.Domain\AspirePostgresRag.Domain.csproj", "{1E880A8D-2169-4057-9C97-5BEDFC54294A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspirePostgresRag.Data", "AspirePostgresRag.Data\AspirePostgresRag.Data.csproj", "{1D39BA00-6C5D-45CA-ADE8-319766451352}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +36,14 @@ Global
 		{88438071-A923-4A20-B0B4-A85CC171B5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{88438071-A923-4A20-B0B4-A85CC171B5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{88438071-A923-4A20-B0B4-A85CC171B5EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E880A8D-2169-4057-9C97-5BEDFC54294A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E880A8D-2169-4057-9C97-5BEDFC54294A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E880A8D-2169-4057-9C97-5BEDFC54294A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E880A8D-2169-4057-9C97-5BEDFC54294A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D39BA00-6C5D-45CA-ADE8-319766451352}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D39BA00-6C5D-45CA-ADE8-319766451352}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D39BA00-6C5D-45CA-ADE8-319766451352}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D39BA00-6C5D-45CA-ADE8-319766451352}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,0 +1,110 @@
+﻿@page "/todos"
+@using AspirePostgresRag.Models.TodoItems
+@* @attribute [StreamRendering(true)] *@
+@* @attribute [OutputCache(Duration = 5)] *@
+
+@inject TodoApiClient TodoApi
+@inject ILogger<Todos> Logger
+
+<PageTitle>Todos</PageTitle>
+
+<h1>Todo</h1>
+
+<p>This component demonstrates showing data loaded and saved to postgres.</p>
+
+@if (todos == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Title</th>
+            <th aria-label="Temperature in Celsius">Completed</th>
+        </tr>
+        </thead>
+        
+        <button @onclick="ButtonClicked">click me!</button>
+        
+        <tbody>
+        @* <tr> *@
+        @*     <td><InputText bind-Value="@draft.Title"></InputText></td> *@
+        @*     <td><button @onclick="CreateTodoClicked"></button></td> *@
+        @* </tr> *@
+        <tr>
+            <td>stuff</td>
+            <td><InputCheckbox @bind-Value="thing"></InputCheckbox></td>
+        </tr>
+        @foreach (var todo in todos)
+        {
+            <tr>
+                <td>@todo.Title</td>
+                <td>
+                    <input id="@todo.Id" type="checkbox" checked="@todo.IsCompleted" 
+                           @onchange="DoSomethingChanged"
+                           @onclick="DoSomethingClicked"
+                    
+                           />
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private TodoItem[]? todos;
+    private TodoDraft draft = new TodoDraft();
+    private bool thing = true;
+
+    private class TodoDraft
+    {
+        public string Title { get; set; } = "enter todo here";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        todos = await TodoApi.GetAll();
+        Logger.LogInformation("Loaded {Count} todos", todos.Length);
+    }
+    
+    private async Task ToggleCompleted(object? newValue, TodoItem item)
+    {
+        bool newCompleted = newValue is bool b && b;
+        Logger.LogCritical("Toggling completed for {Id} to {Completed}", item.Id, newCompleted);
+        var newItem = new UpdateTodoItem(item.Title, newCompleted);
+        await TodoApi.Update(item.Id, newItem);
+        // Optionally reload todos here if needed
+    }
+
+    private void DraftTitleChanged(string? newTitle)
+    {
+        draft.Title = newTitle ?? "";
+    }
+    
+    private async Task CreateTodoClicked()
+    {
+        if (string.IsNullOrWhiteSpace(draft.Title)) return;
+
+        var newItem = new CreateTodoItem(draft.Title, false);
+        await TodoApi.Create(newItem);
+        draft = new TodoDraft();
+    }
+    
+    private void DoSomethingChanged(ChangeEventArgs e)
+    {
+        Logger.LogCritical("doSomething changed called with {Value}", e.Value);
+    }
+    
+    private void DoSomethingClicked(MouseEventArgs obj)
+    {
+        Logger.LogCritical("doSomething clicked called with {Value}", obj.ToString());
+    }
+    
+    private void ButtonClicked(MouseEventArgs obj)
+    {
+        Logger.LogCritical("button clicked called with {Value}", obj.ToString());
+    }
+}

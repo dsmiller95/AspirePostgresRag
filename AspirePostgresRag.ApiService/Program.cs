@@ -1,7 +1,17 @@
+using AspirePostgresRag.ApiService;
+using AspirePostgresRag.Data;
+using AspirePostgresRag.Models.Exceptions;
+using AspirePostgresRag.Models.TodoItems;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
+builder.AddNpgsqlDbContext<TodoDbContext>(connectionName: "PostgresRagDb", configureDbContextOptions: o =>
+{
+    o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
@@ -34,6 +44,70 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+app.MapGet("/todos", async (TodoDbContext db, ILogger<Program> logger) =>
+{
+    try
+    {
+        var items = await db.TodoItems.ToListAsync();
+        return Results.Ok(items);
+    }catch (Exception ex)
+    {
+        logger.LogCritical(ex, "Failed to connect to the database.");
+        return Results.Ok(TodoBogus.Generate());
+    }
+});
+    
+app.MapGet("/todos/{id:int}", async (int id, TodoDbContext db) =>
+{
+    var item = await db.TodoItems.FindAsync(id);
+    return item is not null ? Results.Ok(item) : Results.NotFound();
+});
+
+app.MapPost("/todos", async (TodoDbContext db, CreateTodoItem item) =>
+{
+    var dbItem = new TodoDbItem
+    {
+        Title = item.Title,
+        IsCompleted = item.IsCompleted
+    };
+    var added = db.TodoItems.Add(dbItem);
+    await db.SaveChangesAsync();
+    return Results.Created($"/todos/{added.Entity.Id}", added.Entity.ToDomain());
+});
+
+app.MapPut("/todos/{id:int}", async (int id, TodoDbContext db, UpdateTodoItem updatedItem) =>
+{
+    var item = (await db.TodoItems.FindAsync(id))?.ToDomain();
+    if (item is null)
+    {
+        return Results.NotFound();
+    }
+
+    item = item with
+    {
+        Title = updatedItem.Title,
+        IsCompleted = updatedItem.IsCompleted,
+    };
+    var dbItem = TodoDbItem.FromDomain(item);
+    db.TodoItems.Update(dbItem);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
+app.MapDelete("/todos/{id:int}", async (int id, TodoDbContext db) =>
+{
+    var item = await db.TodoItems.FindAsync(id);
+    if (item is null)
+    {
+        return Results.NotFound();
+    }
+
+    db.TodoItems.Remove(item);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
 
 app.MapDefaultEndpoints();
 
