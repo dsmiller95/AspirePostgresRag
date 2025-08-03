@@ -66,6 +66,8 @@ else
     {
         _isLoading = true;
         this.StateHasChanged();
+
+        if (string.IsNullOrWhiteSpace(SearchTerm)) return;
         
         Logger.LogInformation("Searching for {Term}", SearchTerm);
         _todos = await TodoApi.Search(SearchTerm);
