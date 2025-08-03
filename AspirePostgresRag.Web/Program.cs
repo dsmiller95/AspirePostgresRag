@@ -1,3 +1,4 @@
+using AspirePostgresRag.ServiceDefaults;
 using AspirePostgresRag.Web;
 using AspirePostgresRag.Web.Components;
 

@@ -21,7 +21,6 @@ public class TodoDbItem
     
     public static TodoDbItem FromDomain(TodoItem item)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(item.Id, 0);
         return new TodoDbItem
         {
             Id = item.Id,

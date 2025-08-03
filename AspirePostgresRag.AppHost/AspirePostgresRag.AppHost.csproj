@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AspirePostgresRag.ApiService\AspirePostgresRag.ApiService.csproj" />
+    <ProjectReference Include="..\AspirePostgresRag.MigrationService\AspirePostgresRag.MigrationService.csproj" />
     <ProjectReference Include="..\AspirePostgresRag.Web\AspirePostgresRag.Web.csproj" />
   </ItemGroup>
 

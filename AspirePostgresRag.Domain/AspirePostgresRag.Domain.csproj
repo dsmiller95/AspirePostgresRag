@@ -7,4 +7,8 @@
         <RootNamespace>AspirePostgresRag.Models</RootNamespace>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Bogus" Version="35.6.3" />
+    </ItemGroup>
+
 </Project>

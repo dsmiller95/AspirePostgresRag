@@ -30,7 +30,7 @@ else
             <td><InputText @bind-Value="@draft.Title"></InputText></td>
             <td><button @onclick="CreateTodoClicked">Create</button></td>
         </tr>
-        @foreach (var todo in todos)
+        @foreach (var todo in todos.OrderBy(x => x.Id))
         {
             <tr>
                 <td>@todo.Title</td>
@@ -70,6 +70,7 @@ else
         var newItem = new CreateTodoItem(draft.Title, false);
         await TodoApi.Create(newItem);
         draft = new TodoDraft();
+        todos = await TodoApi.GetAll();
     }
     
     private async Task OnCheckboxChange(ChangeEventArgs e, TodoItem item)

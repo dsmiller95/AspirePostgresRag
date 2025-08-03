@@ -8,8 +8,14 @@ var postgres = builder.AddPostgres("PostgresSql")
 var postgresDb = postgres
     .AddDatabase("PostgresRagDb");
 
+
+var migrations = builder.AddProject<Projects.AspirePostgresRag_MigrationService>("migrations")
+    .WithReference(postgresDb)
+    .WaitFor(postgresDb);
+
 var apiService = builder.AddProject<Projects.AspirePostgresRag_ApiService>("apiservice")
     .WithReference(postgresDb).WaitFor(postgresDb)
+    .WithReference(migrations).WaitFor(migrations)
     .WithHttpHealthCheck("/health")
     ;
 

@@ -1,7 +1,7 @@
 using AspirePostgresRag.ApiService;
 using AspirePostgresRag.Data;
-using AspirePostgresRag.Models.Exceptions;
 using AspirePostgresRag.Models.TodoItems;
+using AspirePostgresRag.ServiceDefaults;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -79,10 +79,7 @@ app.MapPost("/todos", async (TodoDbContext db, CreateTodoItem item) =>
 app.MapPut("/todos/{id:int}", async (int id, TodoDbContext db, UpdateTodoItem updatedItem) =>
 {
     var item = (await db.TodoItems.FindAsync(id))?.ToDomain();
-    if (item is null)
-    {
-        return Results.NotFound();
-    }
+    if (item is null) return Results.NotFound();
 
     item = item with
     {
@@ -113,7 +110,10 @@ app.MapDefaultEndpoints();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+namespace AspirePostgresRag.ApiService
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+    {
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
 }
