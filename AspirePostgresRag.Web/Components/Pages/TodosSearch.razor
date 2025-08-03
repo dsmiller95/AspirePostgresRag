@@ -15,13 +15,13 @@
 <p>Searching for @SearchTerm ...</p>
 
 <p>
-    <form @onsubmit="OnSearchSubmit">
-        <InputText @bind-Value="dummyGarbageNameDoNotUse" placeholder="Search todos..." />
+    <form>
+        <InputText @bind-Value="SearchTerm" placeholder="Search todos..." />
         <button type="submit">Search</button>
     </form>
 </p>
 
-@if (todos == null)
+@if (_todos == null || _isLoading)
 {
     <p><em>Loading...</em></p>
 }
@@ -38,7 +38,7 @@ else
         </thead>
         
         <tbody>
-        @foreach (var todo in todos)
+        @foreach (var todo in _todos)
         {
             <tr>
                 <td>@todo.Score</td>
@@ -57,23 +57,21 @@ else
 @code {
     [SupplyParameterFromQuery]
     public string SearchTerm { get; set; } = string.Empty;
+    
+    private bool _isLoading = true;
 
-    private string dummyGarbageNameDoNotUse = "";
-    private RankedTodoItem[]? todos;
-
+    private RankedTodoItem[]? _todos;
+    
     protected override async Task OnInitializedAsync()
     {
-        dummyGarbageNameDoNotUse = SearchTerm;
+        _isLoading = true;
+        this.StateHasChanged();
+        
         Logger.LogInformation("Searching for {Term}", SearchTerm);
-        todos = await TodoApi.Search(SearchTerm);
-        Logger.LogInformation("Searched for {Term}, loaded {Count} todos", SearchTerm, todos.Length);
-    }
-
-    private void OnSearchSubmit()
-    {
-        Logger.LogInformation("Submitting search for {Term}", dummyGarbageNameDoNotUse);
-        var uri = $"/todos/search?SearchTerm={Uri.EscapeDataString(dummyGarbageNameDoNotUse)}";
-        Logger.LogInformation("Navigating to {Uri}", uri);
-        NavigationManager.NavigateTo(uri);
+        _todos = await TodoApi.Search(SearchTerm);
+        Logger.LogInformation("Searched for {Term}, loaded {Count} todos", SearchTerm, _todos.Length);
+        
+        _isLoading = false;
+        this.StateHasChanged();
     }
 }
