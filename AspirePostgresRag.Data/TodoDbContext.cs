@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AspirePostgresRag.Data.EntityConfigurations;
+using Microsoft.EntityFrameworkCore;
 
 namespace AspirePostgresRag.Data;
 
@@ -9,13 +10,8 @@ public class TodoDbContext(DbContextOptions<TodoDbContext> options) : DbContext(
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<TodoDbItem>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
-            entity.Property(e => e.IsCompleted).IsRequired();
-        });
+        modelBuilder.HasPostgresExtension("vector");
 
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfiguration(new TodoDbItemEntityTypeConfiguration());
     }
 }

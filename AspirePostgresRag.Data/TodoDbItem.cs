@@ -1,4 +1,5 @@
 ﻿using AspirePostgresRag.Models.TodoItems;
+using Pgvector;
 
 namespace AspirePostgresRag.Data;
 
@@ -7,6 +8,11 @@ public class TodoDbItem
     public int Id { get; init; }
     public required string Title { get; init; }
     public required bool IsCompleted { get; init; } 
+    
+    /// <summary>
+    /// length of 1536, openai text-embedding-3-small model
+    /// </summary>
+    public Vector? Embedding { get; set; }
     
     public TodoItem ToDomain()
     {
@@ -25,7 +31,8 @@ public class TodoDbItem
         {
             Id = item.Id,
             Title = item.Title,
-            IsCompleted = item.IsCompleted
+            IsCompleted = item.IsCompleted,
+            Embedding = null,
         };
     }
 }

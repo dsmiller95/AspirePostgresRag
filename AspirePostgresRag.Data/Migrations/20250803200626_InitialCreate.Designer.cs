@@ -5,13 +5,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Pgvector;
 
 #nullable disable
 
 namespace AspirePostgresRag.Data.Migrations
 {
     [DbContext(typeof(TodoDbContext))]
-    [Migration("20250803174711_InitialCreate")]
+    [Migration("20250803200626_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -22,6 +23,7 @@ namespace AspirePostgresRag.Data.Migrations
                 .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
+            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "vector");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("AspirePostgresRag.Data.TodoDbItem", b =>
@@ -31,6 +33,9 @@ namespace AspirePostgresRag.Data.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<Vector>("Embedding")
+                        .HasColumnType("vector(1536)");
 
                     b.Property<bool>("IsCompleted")
                         .HasColumnType("boolean");
@@ -42,7 +47,7 @@ namespace AspirePostgresRag.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("TodoItems");
+                    b.ToTable("TodoItems", (string)null);
                 });
 #pragma warning restore 612, 618
         }

@@ -4,7 +4,13 @@ var cache = builder.AddRedis("cache");
 
 var postgres = builder.AddPostgres("PostgresSql")
     .WithDataVolume("PostgresSqlDataVolume", isReadOnly: false)
-    .WithPgAdmin();
+    .WithPgAdmin()
+    // Use a custom container image that has pgvector installed
+    .WithImage("ankane/pgvector", "latest")
+    .WithAnnotation(new ContainerImageAnnotation { Image = "ankane/pgvector", Tag = "latest" })
+    // Mount the database scripts into the container that will configure pgvector
+    .WithBindMount("./database", "/docker-entrypoint-initdb.d", isReadOnly: true)
+    ;
 var postgresDb = postgres
     .AddDatabase("PostgresRagDb");
 

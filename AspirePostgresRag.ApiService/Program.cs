@@ -8,9 +8,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
-builder.AddNpgsqlDbContext<TodoDbContext>(connectionName: "PostgresRagDb", configureDbContextOptions: o =>
+builder.AddNpgsqlDbContext<TodoDbContext>(connectionName: "PostgresRagDb", configureDbContextOptions: dbContextOptionsBuilder  =>
 {
-    o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    dbContextOptionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    dbContextOptionsBuilder.UseNpgsql(npgBuilder =>
+    {
+        npgBuilder.UseVector();
+    });
 });
 
 // Add services to the container.

@@ -10,9 +10,13 @@ builder.Services.AddHostedService<Worker>();
 
 builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing.AddSource(Worker.ActivitySourceName));
-builder.AddNpgsqlDbContext<TodoDbContext>(connectionName: "PostgresRagDb", configureDbContextOptions: o =>
+builder.AddNpgsqlDbContext<TodoDbContext>(connectionName: "PostgresRagDb", configureDbContextOptions: dbContextOptionsBuilder  =>
 {
-    o.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    dbContextOptionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+    dbContextOptionsBuilder.UseNpgsql(npgBuilder =>
+    {
+        npgBuilder.UseVector();
+    });
 });
 
 var host = builder.Build();
