@@ -24,7 +24,6 @@ public class Worker(
             var dbContext = scope.ServiceProvider.GetRequiredService<TodoDbContext>();
 
             await RunMigrationAsync(dbContext, cancellationToken);
-            await SeedDataAsync(dbContext, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -42,21 +41,6 @@ public class Worker(
         {
             // Run migration in a transaction to avoid partial migration if it fails.
             await dbContext.Database.MigrateAsync(cancellationToken);
-        });
-    }
-
-    private static async Task SeedDataAsync(TodoDbContext dbContext, CancellationToken cancellationToken)
-    {
-        var seeded = TodoBogus.Generate();
-
-        var strategy = dbContext.Database.CreateExecutionStrategy();
-        await strategy.ExecuteAsync(async () =>
-        {
-            // Seed the database
-            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-            await dbContext.TodoItems.AddRangeAsync(seeded.Select(TodoDbItem.FromDomain), cancellationToken);
-            await dbContext.SaveChangesAsync(cancellationToken);
-            await transaction.CommitAsync(cancellationToken);
         });
     }
 }
