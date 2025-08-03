@@ -92,7 +92,7 @@ app.MapPut("/todos/{id:int}", async (int id, TodoDbContext db, UpdateTodoItem up
     var dbItem = TodoDbItem.FromDomain(item);
     db.TodoItems.Update(dbItem);
     await db.SaveChangesAsync();
-    return Results.NoContent();
+    return Results.Ok(dbItem.ToDomain());
 });
 
 app.MapDelete("/todos/{id:int}", async (int id, TodoDbContext db) =>

@@ -18,17 +18,16 @@ public class TodoApiClient(HttpClient httpClient)
     public async Task<TodoItem?> Create(CreateTodoItem item, CancellationToken cancellationToken = default)
     {
         var response = await httpClient.PostAsJsonAsync("/todos", item, cancellationToken);
-        if (response.IsSuccessStatusCode)
-        {
-            return await response.Content.ReadFromJsonAsync<TodoItem>(cancellationToken: cancellationToken);
-        }
-        return null;
+        if (!response.IsSuccessStatusCode) return null;
+
+        return await response.Content.ReadFromJsonAsync<TodoItem>(cancellationToken: cancellationToken);
     }
     
-    public async Task<bool> Update(int id, UpdateTodoItem item, CancellationToken cancellationToken = default)
+    public async Task<TodoItem?> Update(int id, UpdateTodoItem item, CancellationToken cancellationToken = default)
     {
         var response = await httpClient.PutAsJsonAsync($"/todos/{id}", item, cancellationToken);
-        return response.IsSuccessStatusCode;
+        if (!response.IsSuccessStatusCode) return null;
+        return await response.Content.ReadFromJsonAsync<TodoItem>(cancellationToken: cancellationToken);
     }
     
     public async Task<bool> Delete(int id, CancellationToken cancellationToken = default)

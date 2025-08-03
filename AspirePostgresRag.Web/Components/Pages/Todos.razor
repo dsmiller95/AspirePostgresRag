@@ -1,7 +1,6 @@
 ﻿@page "/todos"
 @using AspirePostgresRag.Models.TodoItems
-@* @attribute [StreamRendering(true)] *@
-@* @attribute [OutputCache(Duration = 5)] *@
+@rendermode InteractiveServer
 
 @inject TodoApiClient TodoApi
 @inject ILogger<Todos> Logger
@@ -22,31 +21,25 @@ else
         <thead>
         <tr>
             <th>Title</th>
-            <th aria-label="Temperature in Celsius">Completed</th>
+            <th>Completed</th>
         </tr>
         </thead>
         
-        <button @onclick="ButtonClicked">click me!</button>
-        
         <tbody>
-        @* <tr> *@
-        @*     <td><InputText bind-Value="@draft.Title"></InputText></td> *@
-        @*     <td><button @onclick="CreateTodoClicked"></button></td> *@
-        @* </tr> *@
         <tr>
-            <td>stuff</td>
-            <td><InputCheckbox @bind-Value="thing"></InputCheckbox></td>
+            <td><InputText @bind-Value="@draft.Title"></InputText></td>
+            <td><button @onclick="CreateTodoClicked">Create</button></td>
         </tr>
         @foreach (var todo in todos)
         {
             <tr>
                 <td>@todo.Title</td>
                 <td>
-                    <input id="@todo.Id" type="checkbox" checked="@todo.IsCompleted" 
-                           @onchange="DoSomethingChanged"
-                           @onclick="DoSomethingClicked"
-                    
-                           />
+                    <input id="@todo.Id" type="checkbox"
+                       checked="@todo.IsCompleted"
+                       disabled="@pendingUpdates.Contains(todo.Id)"
+                       @onchange="@((e) => OnCheckboxChange(e, todo))"
+                    />
                 </td>
             </tr>
         }
@@ -57,7 +50,7 @@ else
 @code {
     private TodoItem[]? todos;
     private TodoDraft draft = new TodoDraft();
-    private bool thing = true;
+    private HashSet<int> pendingUpdates = new HashSet<int>();
 
     private class TodoDraft
     {
@@ -70,20 +63,6 @@ else
         Logger.LogInformation("Loaded {Count} todos", todos.Length);
     }
     
-    private async Task ToggleCompleted(object? newValue, TodoItem item)
-    {
-        bool newCompleted = newValue is bool b && b;
-        Logger.LogCritical("Toggling completed for {Id} to {Completed}", item.Id, newCompleted);
-        var newItem = new UpdateTodoItem(item.Title, newCompleted);
-        await TodoApi.Update(item.Id, newItem);
-        // Optionally reload todos here if needed
-    }
-
-    private void DraftTitleChanged(string? newTitle)
-    {
-        draft.Title = newTitle ?? "";
-    }
-    
     private async Task CreateTodoClicked()
     {
         if (string.IsNullOrWhiteSpace(draft.Title)) return;
@@ -93,18 +72,22 @@ else
         draft = new TodoDraft();
     }
     
-    private void DoSomethingChanged(ChangeEventArgs e)
+    private async Task OnCheckboxChange(ChangeEventArgs e, TodoItem item)
     {
-        Logger.LogCritical("doSomething changed called with {Value}", e.Value);
-    }
-    
-    private void DoSomethingClicked(MouseEventArgs obj)
-    {
-        Logger.LogCritical("doSomething clicked called with {Value}", obj.ToString());
-    }
-    
-    private void ButtonClicked(MouseEventArgs obj)
-    {
-        Logger.LogCritical("button clicked called with {Value}", obj.ToString());
+        if (e.Value is not bool newCompleted) return;
+
+        pendingUpdates.Add(item.Id);
+        StateHasChanged();
+        try
+        {
+            var newItem = new UpdateTodoItem(item.Title, newCompleted);
+            await TodoApi.Update(item.Id, newItem);
+            todos = await TodoApi.GetAll();
+        }
+        finally
+        {
+            pendingUpdates.Remove(item.Id);
+            StateHasChanged();
+        }
     }
 }
