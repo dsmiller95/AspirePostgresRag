@@ -1,7 +1,6 @@
 using AspirePostgresRag.ApiService;
 using AspirePostgresRag.ApiService.Application.Todos;
 using AspirePostgresRag.ApiService.Extensions;
-using AspirePostgresRag.ApiService.Options;
 using AspirePostgresRag.Data;
 using AspirePostgresRag.Models.TodoItems;
 using AspirePostgresRag.ServiceDefaults;
@@ -9,6 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables()
+    .AddUserSecrets<Program>();
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
@@ -81,9 +85,9 @@ app.MapPost("/todos", async ([FromServices] ITodoService service, CreateTodoItem
     return Results.Created($"/todos/{added.Id}", added);
 });
 
-app.MapPut("/todos/{id:int}", async (int id, [FromServices] ITodoService service, UpdateTodoItem updatedItem) =>
+app.MapPut("/todos/{id:int}", async (int id, [FromServices] ITodoService service, UpdateTodoItemCompleted updatedItemCompleted) =>
 {
-    var updated = await service.UpdateTodo(id, updatedItem);
+    var updated = await service.UpdateTodo(id, updatedItemCompleted);
     return Results.Ok(updated);
 });
 

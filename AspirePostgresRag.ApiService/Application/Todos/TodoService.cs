@@ -1,6 +1,9 @@
-﻿using AspirePostgresRag.Data;
+﻿using AspirePostgresRag.ApiService.Application.Ai;
+using AspirePostgresRag.Data;
 using AspirePostgresRag.Models.TodoItems;
 using Microsoft.EntityFrameworkCore;
+using Pgvector;
+using Pgvector.EntityFrameworkCore;
 
 namespace AspirePostgresRag.ApiService.Application.Todos;
 
@@ -9,13 +12,13 @@ public interface ITodoService
     Task<List<TodoItem>> GetTodos();
     Task<TodoItem?> GetTodo(int id);
     Task<TodoItem> CreateTodo(CreateTodoItem todoItem);
-    Task<TodoItem> UpdateTodo(int id, UpdateTodoItem updatedTodo);
+    Task<TodoItem> UpdateTodo(int id, UpdateTodoItemCompleted updatedTodo);
     Task<bool> DeleteTodo(int id);
     
     Task<List<TodoItem>> SearchTodos(string search);
 }
 
-public class TodoService(TodoDbContext db) : ITodoService
+public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) : ITodoService
 {
     public async Task<List<TodoItem>> GetTodos()
     {
@@ -30,17 +33,20 @@ public class TodoService(TodoDbContext db) : ITodoService
 
     public async Task<TodoItem> CreateTodo(CreateTodoItem todoItem)
     {
+        var embedding = await embeddingService.GetEmbeddingAsync(todoItem.Title);
+        
         var dbItem = new TodoDbItem
         {
             Title = todoItem.Title,
-            IsCompleted = todoItem.IsCompleted
+            IsCompleted = todoItem.IsCompleted,
+            Embedding = new Vector(embedding),
         };
         var added = db.TodoItems.Add(dbItem);
         await db.SaveChangesAsync();
         return added.Entity.ToDomain();
     }
 
-    public async Task<TodoItem> UpdateTodo(int id, UpdateTodoItem updatedTodo)
+    public async Task<TodoItem> UpdateTodo(int id, UpdateTodoItemCompleted request)
     {
         var existingItem = await db.TodoItems.FindAsync(id);
         if (existingItem is null)
@@ -51,11 +57,10 @@ public class TodoService(TodoDbContext db) : ITodoService
         var item = existingItem.ToDomain();
         item = item with
         {
-            Title = updatedTodo.Title,
-            IsCompleted = updatedTodo.IsCompleted,
+            IsCompleted = request.IsCompleted,
         };
         
-        var dbItem = TodoDbItem.FromDomain(item);
+        var dbItem = TodoDbItem.From(item, existingItem.Embedding);
         db.TodoItems.Update(dbItem);
         await db.SaveChangesAsync();
         return dbItem.ToDomain();
@@ -74,8 +79,16 @@ public class TodoService(TodoDbContext db) : ITodoService
         return true;
     }
 
-    public Task<List<TodoItem>> SearchTodos(string search)
+    public async Task<List<TodoItem>> SearchTodos(string search)
     {
-        throw new NotImplementedException();
+        var embedding = await embeddingService.GetEmbeddingAsync(search);
+        var vector = new Vector(embedding);
+        var results = await db.TodoItems
+            .OrderBy(x => x.Embedding.L2Distance(vector))
+            .Take(10)
+            .Select(x => x.ToDomain())
+            .ToListAsync();
+        
+        return results;
     }
 }

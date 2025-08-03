@@ -2,7 +2,7 @@
 
 public class AiOptions
 {
-    public string OpenAiApiKey { get; set; } = null!;
-    public string ChatModel { get; set; } = "gpt-4o";
-    public string EmbeddingModel { get; set; } = "text-embedding-3-small";
+    public required string OpenAiApiKey { get; set; }
+    public required string ChatModel { get; set; }
+    public required string EmbeddingModel { get; set; }
 }

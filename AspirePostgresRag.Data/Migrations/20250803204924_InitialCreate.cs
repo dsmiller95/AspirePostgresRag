@@ -23,7 +23,7 @@ namespace AspirePostgresRag.Data.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     IsCompleted = table.Column<bool>(type: "boolean", nullable: false),
-                    Embedding = table.Column<Vector>(type: "vector(1536)", nullable: true)
+                    Embedding = table.Column<Vector>(type: "vector(1536)", nullable: false)
                 },
                 constraints: table =>
                 {

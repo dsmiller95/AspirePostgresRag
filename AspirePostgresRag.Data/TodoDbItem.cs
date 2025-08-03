@@ -12,7 +12,7 @@ public class TodoDbItem
     /// <summary>
     /// length of 1536, openai text-embedding-3-small model
     /// </summary>
-    public Vector? Embedding { get; set; }
+    public required Vector Embedding { get; set; }
     
     public TodoItem ToDomain()
     {
@@ -25,14 +25,14 @@ public class TodoDbItem
         };
     }
     
-    public static TodoDbItem FromDomain(TodoItem item)
+    public static TodoDbItem From(TodoItem item, Vector embedding)
     {
         return new TodoDbItem
         {
             Id = item.Id,
             Title = item.Title,
             IsCompleted = item.IsCompleted,
-            Embedding = null,
+            Embedding = embedding,
         };
     }
 }

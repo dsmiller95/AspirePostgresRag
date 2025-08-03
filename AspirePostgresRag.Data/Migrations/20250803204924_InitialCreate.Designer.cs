@@ -12,7 +12,7 @@ using Pgvector;
 namespace AspirePostgresRag.Data.Migrations
 {
     [DbContext(typeof(TodoDbContext))]
-    [Migration("20250803200626_InitialCreate")]
+    [Migration("20250803204924_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -35,6 +35,7 @@ namespace AspirePostgresRag.Data.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<Vector>("Embedding")
+                        .IsRequired()
                         .HasColumnType("vector(1536)");
 
                     b.Property<bool>("IsCompleted")

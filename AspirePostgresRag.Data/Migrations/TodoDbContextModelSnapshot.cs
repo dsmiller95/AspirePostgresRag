@@ -32,6 +32,7 @@ namespace AspirePostgresRag.Data.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<Vector>("Embedding")
+                        .IsRequired()
                         .HasColumnType("vector(1536)");
 
                     b.Property<bool>("IsCompleted")

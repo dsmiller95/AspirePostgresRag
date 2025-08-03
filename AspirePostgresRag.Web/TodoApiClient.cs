@@ -23,9 +23,9 @@ public class TodoApiClient(HttpClient httpClient)
         return await response.Content.ReadFromJsonAsync<TodoItem>(cancellationToken: cancellationToken);
     }
     
-    public async Task<TodoItem?> Update(int id, UpdateTodoItem item, CancellationToken cancellationToken = default)
+    public async Task<TodoItem?> UpdateCompleted(int id, UpdateTodoItemCompleted itemCompleted, CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.PutAsJsonAsync($"/todos/{id}", item, cancellationToken);
+        var response = await httpClient.PutAsJsonAsync($"/todos/{id}", itemCompleted, cancellationToken);
         if (!response.IsSuccessStatusCode) return null;
         return await response.Content.ReadFromJsonAsync<TodoItem>(cancellationToken: cancellationToken);
     }

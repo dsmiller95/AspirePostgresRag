@@ -81,8 +81,8 @@ else
         StateHasChanged();
         try
         {
-            var newItem = new UpdateTodoItem(item.Title, newCompleted);
-            await TodoApi.Update(item.Id, newItem);
+            var newItem = new UpdateTodoItemCompleted(newCompleted);
+            await TodoApi.UpdateCompleted(item.Id, newItem);
             todos = await TodoApi.GetAll();
         }
         finally
