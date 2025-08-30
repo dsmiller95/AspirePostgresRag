@@ -1,4 +1,5 @@
 ﻿using ApiService.Application.Products;
+using Domain;
 using Domain.Products;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,42 +14,59 @@ public static class ProductEndpoints
             try
             {
                 return Results.Ok(await service.GetProducts());
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 logger.LogCritical(ex, "Failed to connect to the database.");
                 return Results.Ok(ProductBogus.Generate());
             }
-        });
+        }).WithDefaults();
     
         app.MapGet("/products/{id:int}", async (int id, [FromServices] IProductService service) =>
         {
             var item = await service.GetProduct(id);
             return item is not null ? Results.Ok(item) : Results.NotFound();
-        });
+        }).WithDefaults();
 
         app.MapPost("/products", async ([FromServices] IProductService service, CreateProduct item) =>
         {
             var added = await service.CreateProduct(item);
             return Results.Created($"/products/{added.Id}", added);
-        });
+        }).WithDefaults();
+        
+        app.MapPost("/products/bogus/{number}", async ([FromServices] IProductService service, int number) =>
+        {
+            var added = await service.GenerateProducts(number);
+            return Results.Created($"/products/", added);
+        }).WithDefaults();
 
         app.MapPut("/products/{id:int}", async (int id, [FromServices] IProductService service, UpdateProductModel updateRequest) =>
         {
             var updated = await service.UpdateProduct(updateRequest.ToDomain(id));
             return Results.Ok(updated);
-        });
+        }).WithDefaults();
 
         app.MapDelete("/products/{id:int}", async (int id, [FromServices] IProductService service) =>
         {
             await service.DeleteProduct(id);
             return Results.NoContent();
-        });
+        }).WithDefaults();
 
         return app;
     }
+    
+    private static RouteHandlerBuilder WithDefaults(this RouteHandlerBuilder builder)
+    {
+        return builder
+            .WithTags("Products");
+    }
 
-    private record UpdateProductModel(string Title, decimal Price)
+    private record UpdateProductModel(string Title, decimal Price) : IHaveExample
     {
         public UpdateProduct ToDomain(int id) => new(id, Title, Price);
+        public static object GetExample()
+        {
+            return new UpdateProductModel("Drill", 19.99m);
+        }
     }
 }

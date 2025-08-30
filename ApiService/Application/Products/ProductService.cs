@@ -10,6 +10,7 @@ public interface IProductService
     Task<List<Product>> GetProducts();
     Task<Product?> GetProduct(int id);
     Task<Product> CreateProduct(CreateProduct createRequest);
+    Task<IEnumerable<int>> GenerateProducts(int count);
     Task<Product> UpdateProduct(UpdateProduct updateRequest);
     Task<bool> DeleteProduct(int id);
 }
@@ -37,6 +38,14 @@ public class ProductService(AppDbContext db) : IProductService
         var added = db.Products.Add(dbItem);
         await db.SaveChangesAsync();
         return added.Entity.ToDomain();
+    }
+
+    public async Task<IEnumerable<int>> GenerateProducts(int count)
+    {
+        var items = ProductBogus.Generate(count);
+        db.Products.AddRange(items.Select(ProductDb.From));
+        await db.SaveChangesAsync();
+        return items.Select(x => x.Id);
     }
 
     public async Task<Product> UpdateProduct(UpdateProduct request)

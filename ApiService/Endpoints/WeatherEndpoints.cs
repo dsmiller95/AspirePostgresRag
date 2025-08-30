@@ -18,9 +18,17 @@ public static class WeatherEndpoints
                     .ToArray();
                 return forecast;
             })
+            .WithDefaults()
+            .CacheOutput()
             .WithName("GetWeatherForecast");
 
         return app;
+    }
+    
+    private static RouteHandlerBuilder WithDefaults(this RouteHandlerBuilder builder)
+    {
+        return builder
+            .WithTags("Weather");
     }
     
     record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)

@@ -1,8 +1,10 @@
 using ApiService.Endpoints;
 using ApiService.Extensions;
+using ApiService.Infrastructure;
 using Data;
 using ServiceDefaults;
 using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +32,10 @@ builder.Services
 builder.Services.AddProblemDetails();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(o =>
+{
+    o.AddSchemaTransformer<ExampleSchemaTransformer>();
+});
 
 var app = builder.Build();
 
@@ -40,8 +45,11 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
+    app.Map("/", () => Results.Redirect("/scalar/v1"))
+        .WithName("RootRedirect")
+        .WithSummary("Redirect to Scalar API");
 }
-
 
 app
     .MapWeatherEndpoints()
