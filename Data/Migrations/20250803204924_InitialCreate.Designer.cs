@@ -11,7 +11,7 @@ using Pgvector;
 
 namespace Data.Migrations
 {
-    [DbContext(typeof(TodoDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20250803204924_InitialCreate")]
     partial class InitialCreate
     {

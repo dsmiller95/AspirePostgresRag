@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Data.EntityConfigurations;
+namespace Data.TodoItems;
 
 class TodoDbItemEntityTypeConfiguration
     : IEntityTypeConfiguration<TodoDbItem>

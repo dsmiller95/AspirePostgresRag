@@ -1,7 +1,7 @@
 ﻿using Domain.TodoItems;
 using Pgvector;
 
-namespace Data;
+namespace Data.TodoItems;
 
 public class TodoDbItem
 {

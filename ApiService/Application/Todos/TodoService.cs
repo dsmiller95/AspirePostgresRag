@@ -1,5 +1,6 @@
 ﻿using ApiService.Application.Ai;
 using Data;
+using Data.TodoItems;
 using Domain.TodoItems;
 using Microsoft.EntityFrameworkCore;
 using Pgvector;
@@ -18,16 +19,16 @@ public interface ITodoService
     Task<List<RankedTodoItem>> SearchTodos(string search);
 }
 
-public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) : ITodoService
+public class TodoService(AppDbContext appDb, IEmbeddingService embeddingService) : ITodoService
 {
     public async Task<List<TodoItem>> GetTodos()
     {
-        return await db.TodoItems.Select(x => x.ToDomain()).ToListAsync();
+        return await appDb.TodoItems.Select(x => x.ToDomain()).ToListAsync();
     }
 
     public async Task<TodoItem?> GetTodo(int id)
     {
-        var item = await db.TodoItems.FindAsync(id);
+        var item = await appDb.TodoItems.FindAsync(id);
         return item?.ToDomain();
     }
 
@@ -41,14 +42,14 @@ public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) :
             IsCompleted = todoItem.IsCompleted,
             Embedding = new Vector(embedding),
         };
-        var added = db.TodoItems.Add(dbItem);
-        await db.SaveChangesAsync();
+        var added = appDb.TodoItems.Add(dbItem);
+        await appDb.SaveChangesAsync();
         return added.Entity.ToDomain();
     }
 
     public async Task<TodoItem> UpdateTodo(int id, UpdateTodoItemCompleted request)
     {
-        var existingItem = await db.TodoItems.FindAsync(id);
+        var existingItem = await appDb.TodoItems.FindAsync(id);
         if (existingItem is null)
         {
             throw new KeyNotFoundException($"Todo item with id {id} not found.");
@@ -61,21 +62,21 @@ public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) :
         };
         
         var dbItem = TodoDbItem.From(item, existingItem.Embedding);
-        db.TodoItems.Update(dbItem);
-        await db.SaveChangesAsync();
+        appDb.TodoItems.Update(dbItem);
+        await appDb.SaveChangesAsync();
         return dbItem.ToDomain();
     }
 
     public async Task<bool> DeleteTodo(int id)
     {
-        var item = await db.TodoItems.FindAsync(id);
+        var item = await appDb.TodoItems.FindAsync(id);
         if (item is null)
         {
             return false;
         }
 
-        db.TodoItems.Remove(item);
-        await db.SaveChangesAsync();
+        appDb.TodoItems.Remove(item);
+        await appDb.SaveChangesAsync();
         return true;
     }
 
@@ -90,7 +91,7 @@ public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) :
         }
         var embedding = await embeddingService.GetEmbeddingAsync(search);
         var vector = new Vector(embedding);
-        var results = await db.TodoItems
+        var results = await appDb.TodoItems
             .Select(x => new { DbItem = x, Distance = x.Embedding.L2Distance(vector) })
             .OrderBy(x => x.Distance)
             .Take(10)
