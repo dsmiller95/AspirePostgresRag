@@ -1,0 +1,79 @@
+﻿@page "/todos/search"
+@using Domain.TodoItems
+@using Microsoft.AspNetCore.Mvc
+
+@inject TodoApiClient TodoApi
+@inject ILogger<Todos> Logger
+@inject NavigationManager NavigationManager
+
+<PageTitle>Todos search</PageTitle>
+
+<h1>Todo Search</h1>
+
+<p>This component demonstrates searching over todos with RAG.</p>
+
+<p>Searching for @SearchTerm ...</p>
+
+<p>
+    <form>
+        <InputText @bind-Value="SearchTerm" placeholder="Search todos..." />
+        <button type="submit">Search</button>
+    </form>
+</p>
+
+@if (_todos == null || _isLoading)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Title</th>
+            <th>Completed</th>
+        </tr>
+        </thead>
+        
+        <tbody>
+        @foreach (var todo in _todos)
+        {
+            <tr>
+                <td>@todo.Score</td>
+                <td>@todo.Title</td>
+                <td>
+                    <input id="@todo.Id" type="checkbox"
+                           checked="@todo.IsCompleted"
+                           disabled/>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    [SupplyParameterFromQuery]
+    public string SearchTerm { get; set; } = string.Empty;
+    
+    private bool _isLoading = true;
+
+    private RankedTodoItem[]? _todos;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        _isLoading = true;
+        this.StateHasChanged();
+
+        if (string.IsNullOrWhiteSpace(SearchTerm)) return;
+        
+        Logger.LogInformation("Searching for {Term}", SearchTerm);
+        _todos = await TodoApi.Search(SearchTerm);
+        Logger.LogInformation("Searched for {Term}, loaded {Count} todos", SearchTerm, _todos.Length);
+        
+        _isLoading = false;
+        this.StateHasChanged();
+    }
+}
