@@ -1,4 +1,5 @@
 ﻿using ApiService.Application.Products;
+using ApiService.Models.Products;
 using Domain.Products;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,24 +13,24 @@ public static class ProductEndpoints
         {
             try
             {
-                return Results.Ok(await service.GetProducts());
+                return Results.Ok((await service.GetProducts()).ToModels());
             }
             catch (Exception ex)
             {
                 logger.LogCritical(ex, "Failed to connect to the database.");
-                return Results.Ok(ProductBogus.Generate());
+                return Results.Ok(ProductBogus.Generate().ToModels());
             }
         }).WithDefaults();
         
         app.MapGet("/products/search", async ([FromQuery] string query, [FromServices] IProductService service) =>
         {
-            return Results.Ok(await service.SearchProducts(query));
+            return Results.Ok((await service.SearchProducts(query)).ToModels());
         }).WithDefaults();
     
         app.MapGet("/products/{id:int}", async (int id, [FromServices] IProductService service) =>
         {
             var item = await service.GetProduct(id);
-            return item is not null ? Results.Ok(item) : Results.NotFound();
+            return item is not null ? Results.Ok(item.ToModel()) : Results.NotFound();
         }).WithDefaults();
 
         app.MapPut("/products", async ([FromServices] IProductService service, UpsertProductRequest item) =>
