@@ -1,7 +1,9 @@
 ﻿using System.Text.Json;
 using System.Text.RegularExpressions;
-using ApiService.Application.Ai;
+using Data;
+using Data.ErrorRecoveries;
 using Domain.ErrorRecovery;
+using Microsoft.EntityFrameworkCore;
 using OpenAI.Chat;
 
 namespace ApiService.Application.ErrorRecovery;
@@ -11,13 +13,45 @@ public interface IErrorRecoveryService
     Task<ErrorRecoveryResult> GetRecovery(ErrorRecoveryRequest request);
 }
 
-public partial class ErrorRecoveryService(ChatClient chatClient, ILogger<ErrorRecoveryService> logger) : IErrorRecoveryService
+public partial class ErrorRecoveryService(
+    ChatClient chatClient,
+    AppDbContext dbContext,
+    ILogger<ErrorRecoveryService> logger) : IErrorRecoveryService
 {
     public async Task<ErrorRecoveryResult> GetRecovery(ErrorRecoveryRequest request)
     {
         var summary = GetErrorContentSummary(request);
+        var existing = await GetExistingErrorRecovery(request.NormalizationKey, summary);
+        if (existing is not null)
+        {
+            return new ErrorRecoveryResult(existing.ErrorResponseStatusCode, existing.ErrorResponse);
+        }
         
-        logger.LogInformation("Error summary:\n{Summary}", summary);
+        var recovery = await GetRecovery(summary);
+        var dbEntry = new ErrorRecoveryDb
+        {
+            NormalizationKey = request.NormalizationKey,
+            ErrorContent = summary,
+            ErrorResponse = recovery.ResultJson,
+            ErrorResponseStatusCode = recovery.Status
+        };
+        dbContext.ErrorRecoveries.Add(dbEntry);
+        try
+        {
+            await dbContext.SaveChangesAsync();
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to save error recovery to database");
+            throw;
+        }
+        
+        return recovery;
+    }
+
+    private async Task<ErrorRecoveryResult> GetRecovery(string contentSummary)
+    {
+        logger.LogInformation("Error summary:\n{Summary}", contentSummary);
         
         var response = await chatClient.CompleteChatAsync(
             ChatMessage.CreateSystemMessage("You are an expert software engineer who helps to recover from errors in code."),
@@ -42,7 +76,7 @@ It must include a status key which is an integer HTTP status code.
 Following is the Error Information:
 
 --- --- --- ---
-""" + summary + @"""
+""" + contentSummary + @"""
 --- --- --- ---
 
 Provide a response in the specified format:
@@ -72,6 +106,14 @@ Provide a response in the specified format:
         """;
     }
 
+    private async Task<ErrorRecoveryDb?> GetExistingErrorRecovery(string normalizationKey, string errorContent)
+    {
+        return await dbContext.ErrorRecoveries
+            .Where(x => x.NormalizationKey == normalizationKey)
+            .Where(x => x.ErrorContent == errorContent)
+            .FirstOrDefaultAsync();
+    }
+    
     // ReSharper disable InconsistentNaming
     private record ResponseErrorCode(int? status);
     // ReSharper restore InconsistentNaming

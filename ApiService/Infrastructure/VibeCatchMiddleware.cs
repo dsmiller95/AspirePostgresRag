@@ -4,7 +4,7 @@ using Domain.ErrorRecovery;
 
 namespace ApiService.Infrastructure;
 
-public class VibeCatchMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
+public class VibeCatchMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IServiceProvider serviceProvider)
 {
     private ILogger<VibeCatchMiddleware> Logger { get; } = loggerFactory.CreateLogger<VibeCatchMiddleware>();
     public async Task Invoke(HttpContext context)
@@ -22,9 +22,13 @@ public class VibeCatchMiddleware(RequestDelegate next, ILoggerFactory loggerFact
         
         if (edi != null)
         {
+            // create a scope for scoped services. will create a new db context. otherwise changes from other services, if they failed, will leak in??
+            //      this seems so bad! why is change leaking between services the default!
+            using var scope = serviceProvider.CreateScope();
+            
             Logger.LogError(edi.SourceException, "Exception caught in VibeCatchMiddleware for request {Path}", context.Request.Path);
             
-            var errorRecoveryService = context.RequestServices.GetRequiredService<IErrorRecoveryService>();
+            var errorRecoveryService = scope.ServiceProvider.GetRequiredService<IErrorRecoveryService>();
             await HandleException(context, edi, errorRecoveryService);
         }
     }

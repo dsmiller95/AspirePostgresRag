@@ -10,6 +10,12 @@ var postgres = builder.AddPostgres("PostgresSql")
     .WithAnnotation(new ContainerImageAnnotation { Image = "ankane/pgvector", Tag = "latest" })
     // Mount the database scripts into the container that will configure pgvector
     .WithBindMount("./database", "/docker-entrypoint-initdb.d", isReadOnly: true)
+    .WithEndpoint("tcp", endpoint =>
+    {
+        endpoint.Port = 5432;
+        endpoint.TargetPort = 5432;
+        endpoint.IsExternal = true;
+    })
     ;
 var postgresDb = postgres
     .AddDatabase("PostgresRagDb");

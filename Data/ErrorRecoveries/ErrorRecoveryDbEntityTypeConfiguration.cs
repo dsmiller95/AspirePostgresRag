@@ -11,6 +11,7 @@ class ErrorRecoveryDbEntityTypeConfiguration
         builder.ToTable("ErrorRecoveries");
         
         builder.HasKey(x => x.Id);
+        builder.HasIndex(x => x.NormalizationKey);
 
         builder.Property(x => x.Id)
             .ValueGeneratedOnAdd();
@@ -24,5 +25,7 @@ class ErrorRecoveryDbEntityTypeConfiguration
         builder.Property(x => x.ErrorResponse)
             .IsRequired()
             .IsFixedLength(false);
+        builder.Property(x => x.ErrorResponseStatusCode)
+            .IsRequired();
     }
 }

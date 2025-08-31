@@ -1,4 +1,3 @@
-using ApiService.Application.ErrorRecovery;
 using ApiService.Endpoints;
 using ApiService.Extensions;
 using ApiService.Infrastructure;
