@@ -10,6 +10,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<TodoDbItem> TodoItems => Set<TodoDbItem>();
     public DbSet<ProductDb> Products => Set<ProductDb>();
     public DbSet<ErrorRecoveryDb> ErrorRecoveries => Set<ErrorRecoveryDb>();
+    public DbSet<ErrorRecoverySchemaDb> ErrorRecoverySchemas => Set<ErrorRecoverySchemaDb>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,5 +19,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.ApplyConfiguration(new TodoDbItemEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ProductDbEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new ErrorRecoveryDbEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new ErrorRecoverySchemaDbEntityTypeConfiguration());
     }
 }

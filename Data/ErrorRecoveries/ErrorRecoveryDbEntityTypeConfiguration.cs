@@ -22,10 +22,15 @@ class ErrorRecoveryDbEntityTypeConfiguration
         builder.Property(x => x.ErrorContent)
             .IsRequired()
             .IsFixedLength(false);
+        builder.Property(x => x.ErrorContentSummary)
+            .IsRequired()
+            .IsFixedLength(false);
         builder.Property(x => x.ErrorResponse)
             .IsRequired()
             .IsFixedLength(false);
         builder.Property(x => x.ErrorResponseStatusCode)
+            .IsRequired();
+        builder.Property(x => x.Active)
             .IsRequired();
     }
 }

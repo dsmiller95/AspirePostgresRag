@@ -55,7 +55,8 @@ if (app.Environment.IsDevelopment())
 app
     .MapWeatherEndpoints()
     .MapTodoItemEndpoints()
-    .MapProductEndpoints();
+    .MapProductEndpoints()
+    .MapErrorRecoveryEndpoints();
 
 app.MapDefaultEndpoints();
 

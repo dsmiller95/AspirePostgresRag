@@ -40,7 +40,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITodoService, TodoService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IErrorRecoveryService, ErrorRecoveryService>();
-
+        
+        services.AddScoped<IErrorRecoveryCleanupJobRunner, ErrorRecoveryCleanupJobRunner>();
+        
         return services;
     }
 }

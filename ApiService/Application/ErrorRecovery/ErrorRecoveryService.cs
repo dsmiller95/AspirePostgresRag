@@ -20,19 +20,26 @@ public partial class ErrorRecoveryService(
 {
     public async Task<ErrorRecoveryResult> GetRecovery(ErrorRecoveryRequest request)
     {
-        var summary = GetErrorContentSummary(request);
-        var existing = await GetExistingErrorRecovery(request.NormalizationKey, summary);
+        var errorDescription = GetErrorDescription(request);
+        var existing = await GetExistingErrorRecovery(request.NormalizationKey, errorDescription);
         if (existing is not null)
         {
             return new ErrorRecoveryResult(existing.ErrorResponseStatusCode, existing.ErrorResponse);
         }
         
-        var recovery = await GetRecovery(summary);
+        var schema = await GetExistingSchema(request.NormalizationKey);
+
+        var recoveryTask = GetRecovery(errorDescription, schema?.JsonSchema);
+        var summaryTask = GetSummary(errorDescription);
+        var recovery = await recoveryTask;
+        var summary = await summaryTask;
         var dbEntry = new ErrorRecoveryDb
         {
+            Active = true,
             NormalizationKey = request.NormalizationKey,
-            ErrorContent = summary,
+            ErrorContent = errorDescription,
             ErrorResponse = recovery.ResultJson,
+            ErrorContentSummary = summary,
             ErrorResponseStatusCode = recovery.Status
         };
         dbContext.ErrorRecoveries.Add(dbEntry);
@@ -49,7 +56,28 @@ public partial class ErrorRecoveryService(
         return recovery;
     }
 
-    private async Task<ErrorRecoveryResult> GetRecovery(string contentSummary)
+    private async Task<string> GetSummary(string errorContent)
+    {
+        var response = await chatClient.CompleteChatAsync(
+            ChatMessage.CreateSystemMessage(
+                "You are an expert software engineer who helps to summarize error messages."),
+            ChatMessage.CreateUserMessage(
+                @"""
+Given the following error information, provide a concise summary of the error. Include all key details about the error.
+For example, error cause, recoverability, application location, and any other relevant information. The summary should be no more than 100 words.
+the summary should be in plain text format.
+The summary should contain all information which would be required in order to understand what an api error response would look like. 
+
+Summarize the following error information:
+--- --- --- ---
+""" + errorContent + @"""
+--- --- --- ---
+"""));
+        
+        return response.Value.Content.Last().Text;
+    }
+
+    private async Task<ErrorRecoveryResult> GetRecovery(string contentSummary, string? responseSchema)
     {
         logger.LogInformation("Error summary:\n{Summary}", contentSummary);
         
@@ -73,8 +101,12 @@ It must include a status key which is an integer HTTP status code.
 }
 ```
 
-Following is the Error Information:
+This error response should conform to the following json schema, if provided:
+--- --- --- ---
+""" + (responseSchema ?? "No schema provided") + @"""
+--- --- --- ---
 
+Following is the Error Information:
 --- --- --- ---
 """ + contentSummary + @"""
 --- --- --- ---
@@ -96,7 +128,7 @@ Provide a response in the specified format:
         return new ErrorRecoveryResult(statusCode, jsonStringFromRegex);
     }
     
-    private string GetErrorContentSummary(ErrorRecoveryRequest request)
+    private string GetErrorDescription(ErrorRecoveryRequest request)
     {
         return $"""
         Normalization Key: {request.NormalizationKey}
@@ -109,8 +141,16 @@ Provide a response in the specified format:
     private async Task<ErrorRecoveryDb?> GetExistingErrorRecovery(string normalizationKey, string errorContent)
     {
         return await dbContext.ErrorRecoveries
+            .Where(x => x.Active)
             .Where(x => x.NormalizationKey == normalizationKey)
             .Where(x => x.ErrorContent == errorContent)
+            .FirstOrDefaultAsync();
+    }
+    
+    private async Task<ErrorRecoverySchemaDb?> GetExistingSchema(string normalizationKey)
+    {
+        return await dbContext.ErrorRecoverySchemas
+            .Where(x => x.NormalizationKey == normalizationKey)
             .FirstOrDefaultAsync();
     }
     
