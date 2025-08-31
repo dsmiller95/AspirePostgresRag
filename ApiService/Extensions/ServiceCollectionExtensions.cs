@@ -1,4 +1,5 @@
 ﻿using ApiService.Application.Ai;
+using ApiService.Application.ErrorRecovery;
 using ApiService.Application.Products;
 using ApiService.Application.Todos;
 using ApiService.Infrastructure.Ai;
@@ -38,6 +39,7 @@ public static class ServiceCollectionExtensions
         
         services.AddScoped<ITodoService, TodoService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IErrorRecoveryService, ErrorRecoveryService>();
 
         return services;
     }

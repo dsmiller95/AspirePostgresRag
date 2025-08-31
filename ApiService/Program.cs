@@ -1,3 +1,4 @@
+using ApiService.Application.ErrorRecovery;
 using ApiService.Endpoints;
 using ApiService.Extensions;
 using ApiService.Infrastructure;
@@ -41,6 +42,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseExceptionHandler();
+app.UseVibeCatch();
 
 if (app.Environment.IsDevelopment())
 {
@@ -57,5 +59,6 @@ app
     .MapProductEndpoints();
 
 app.MapDefaultEndpoints();
+
 
 app.Run();

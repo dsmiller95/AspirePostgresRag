@@ -34,9 +34,9 @@ public static class ProductEndpoints
             return Results.Created($"/products/{added.Id}", added);
         }).WithDefaults();
         
-        app.MapPost("/products/bogus/{number}", async ([FromServices] IProductService service, int number) =>
+        app.MapPost("/products/bogus/{count}", async ([FromServices] IProductService service, int count) =>
         {
-            var added = await service.GenerateProducts(number);
+            var added = await service.GenerateProducts(count);
             return Results.Created($"/products/", added);
         }).WithDefaults();
 
