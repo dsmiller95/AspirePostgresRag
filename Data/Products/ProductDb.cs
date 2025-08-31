@@ -22,7 +22,7 @@ public class ProductDb
             Id = Id,
             UniqueSku = UniqueSku,
             Title = Title,
-            ScrapedJson = ScrapedJson,
+            AiSummary = ScrapedJson,
         };
     }
     
@@ -32,7 +32,7 @@ public class ProductDb
         {
             UniqueSku = upsertRequest.UniqueSku,
             Title = upsertRequest.Title,
-            ScrapedJson = upsertRequest.ScrapedJson,
+            ScrapedJson = upsertRequest.AiSummary,
             Embedding = embedding.EnsureValidTextEmbedding(),
         };
     }
@@ -44,7 +44,7 @@ public class ProductDb
             Id = item.Id,
             UniqueSku = item.UniqueSku,
             Title = item.Title,
-            ScrapedJson = item.ScrapedJson,
+            ScrapedJson = item.AiSummary,
             Embedding = embedding.EnsureValidTextEmbedding(),
         };
     }

@@ -7,7 +7,8 @@ public class WebScrapedProduct
     public required string Sku { get; init; }
     public required string Title { get; init; }
     public required string RawJsonContent { get; init; }
+    public required string TextualSummary { get; init; }
     
     public UpsertProductRequest ToUpsertProductRequest() =>
-        new UpsertProductRequest(Sku, Title, RawJsonContent);
+        new UpsertProductRequest(Sku, Title, TextualSummary);
 }

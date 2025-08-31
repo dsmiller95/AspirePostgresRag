@@ -1,6 +1,6 @@
 ﻿namespace Domain.Products;
 
-public record UpsertProductRequest(string UniqueSku, string Title, string ScrapedJson) : IHaveExample
+public record UpsertProductRequest(string UniqueSku, string Title, string AiSummary) : IHaveExample
 {
     public static object GetExample() => 
         new UpsertProductRequest(
@@ -18,5 +18,5 @@ public record UpsertProductRequest(string UniqueSku, string Title, string Scrape
     public bool HasChanges(Product other) =>
         other.UniqueSku != UniqueSku ||
         other.Title != Title ||
-        other.ScrapedJson != ScrapedJson;
+        other.AiSummary != AiSummary;
 }

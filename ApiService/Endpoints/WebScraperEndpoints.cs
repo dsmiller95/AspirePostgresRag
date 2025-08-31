@@ -2,6 +2,7 @@
 using ApiService.Application.WebScrapes;
 using Domain;
 using Domain.Products;
+using Domain.WebScrapes;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiService.Endpoints;
@@ -16,12 +17,14 @@ public static class WebScraperEndpoints
             [FromBody] ScrapeRequest request,
             ILogger<Program> logger) =>
         {
-            var scrapeResults = await webScrapeService.ScrapeProducts(request.BatterySystem);
-            var upsertRequests = scrapeResults.Select(x => x.ToUpsertProductRequest());
+            List<WebScrapedProduct> scrapeResults = [];
             List<UpsertProductResponse> upsertResponses = [];
-            foreach (var upsertRequest in upsertRequests)
+            await foreach(var scraped in webScrapeService.ScrapeProducts(request.BatterySystem))
             {
+                var upsertRequest = scraped.ToUpsertProductRequest();
                 var upserted = await productService.UpsertProduct(upsertRequest);
+                
+                scrapeResults.Add(scraped);
                 upsertResponses.Add(upserted);
             }
             

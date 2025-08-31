@@ -9,7 +9,7 @@ public record RankedProduct : Product
         Id = product.Id,
         UniqueSku = product.UniqueSku,
         Title = product.Title,
-        ScrapedJson = product.ScrapedJson,
+        AiSummary = product.AiSummary,
         Score = score,
     };
 }

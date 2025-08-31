@@ -42,7 +42,7 @@ public class ProductService(AppDbContext db, IEmbeddingService embeddingService)
             return new UpsertProductResponse(existingProduct, UpsertChangeType.Unchanged);
         }
         
-        var embedding = await embeddingService.GetEmbeddingAsync(productRequest.ScrapedJson);
+        var embedding = await embeddingService.GetEmbeddingAsync(productRequest.AiSummary);
 
         if (existingProduct is null)
         {
@@ -54,7 +54,7 @@ public class ProductService(AppDbContext db, IEmbeddingService embeddingService)
         }
         else
         {
-            var updatedProduct = existingProduct with { Title = productRequest.Title, ScrapedJson = productRequest.ScrapedJson, };
+            var updatedProduct = existingProduct with { Title = productRequest.Title, AiSummary = productRequest.AiSummary, };
             var updatedItem = ProductDb.From(updatedProduct, new Vector(embedding));
             db.Products.Update(updatedItem);
             await db.SaveChangesAsync();
