@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var cache = builder.AddRedis("cache");
@@ -11,6 +13,13 @@ var postgres = builder.AddPostgres("PostgresSql")
     // Mount the database scripts into the container that will configure pgvector
     .WithBindMount("./database", "/docker-entrypoint-initdb.d", isReadOnly: true)
     ;
+
+if (builder.Environment.IsDevelopment())
+{
+    postgres
+        .WithEndpoint(name: "postgresendpoint", scheme: "tcp", port: 5432, targetPort: 5432, isProxied: false);
+}
+
 var postgresDb = postgres
     .AddDatabase("PostgresRagDb");
 

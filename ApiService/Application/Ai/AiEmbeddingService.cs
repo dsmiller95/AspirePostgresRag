@@ -1,6 +1,4 @@
-﻿using Pgvector;
-
-namespace ApiService.Application.Ai;
+﻿namespace ApiService.Application.Ai;
 
 public interface IEmbeddingService
 {
