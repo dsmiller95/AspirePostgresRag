@@ -53,7 +53,7 @@ public class ProductService(AppDbContext db) : IProductService
         var existingItem = await db.Products.FindAsync(request.Id);
         if (existingItem is null)
         {
-            throw new KeyNotFoundException($"Product item with id {request.Id} not found.");
+            throw new KeyNotFoundException("Product not found.");
         }
 
         var item = existingItem.ToDomain();

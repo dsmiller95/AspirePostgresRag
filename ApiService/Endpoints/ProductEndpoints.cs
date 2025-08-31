@@ -9,24 +9,13 @@ public static class ProductEndpoints
 {
     public static WebApplication MapProductEndpoints(this WebApplication app)
     {
-        app.MapGet("/products", async ([FromServices] IProductService service, ILogger<Program> logger) =>
-        {
-            try
-            {
-                return Results.Ok(await service.GetProducts());
-            }
-            catch (Exception ex)
-            {
-                logger.LogCritical(ex, "Failed to connect to the database.");
-                return Results.Ok(ProductBogus.Generate());
-            }
-        }).WithDefaults();
+        app.MapGet("/products", async ([FromServices] IProductService service) =>
+            Results.Ok(await service.GetProducts()))
+            .WithDefaults();
     
-        app.MapGet("/products/{id:int}", async (int id, [FromServices] IProductService service) =>
-        {
-            var item = await service.GetProduct(id);
-            return item is not null ? Results.Ok(item) : Results.NotFound();
-        }).WithDefaults();
+        app.MapGet("/products/{id:int}", async (int id, [FromServices] IProductService service) => 
+            await service.GetProduct(id) ?? throw new Exception("not found"))
+            .WithDefaults();
 
         app.MapPost("/products", async ([FromServices] IProductService service, CreateProduct item) =>
         {

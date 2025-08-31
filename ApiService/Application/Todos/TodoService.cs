@@ -52,7 +52,7 @@ public class TodoService(AppDbContext appDb, IEmbeddingService embeddingService)
         var existingItem = await appDb.TodoItems.FindAsync(id);
         if (existingItem is null)
         {
-            throw new KeyNotFoundException($"Todo item with id {id} not found.");
+            throw new KeyNotFoundException("Todo item not found.");
         }
 
         var item = existingItem.ToDomain();

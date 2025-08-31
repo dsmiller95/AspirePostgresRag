@@ -1,25 +1,27 @@
+using Microsoft.Extensions.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var cache = builder.AddRedis("cache");
 
 var postgres = builder.AddPostgres("PostgresSql")
-    .WithDataVolume("PostgresSqlDataVolume", isReadOnly: false)
-    .WithPgAdmin()
-    // Use a custom container image that has pgvector installed
     .WithImage("ankane/pgvector", "latest")
     .WithAnnotation(new ContainerImageAnnotation { Image = "ankane/pgvector", Tag = "latest" })
+    // Use a custom container image that has pgvector installed
+    .WithDataVolume("PostgresSqlDataVolume", isReadOnly: false)
     // Mount the database scripts into the container that will configure pgvector
     .WithBindMount("./database", "/docker-entrypoint-initdb.d", isReadOnly: true)
-    .WithEndpoint("tcp", endpoint =>
-    {
-        endpoint.Port = 5432;
-        endpoint.TargetPort = 5432;
-        endpoint.IsExternal = true;
-    })
+    .WithPgAdmin()
     ;
+
+if (builder.Environment.IsDevelopment())
+{
+    postgres
+        .WithEndpoint(name: "postgresendpoint", scheme: "tcp", port: 5432, targetPort: 5432, isProxied: false);
+}
+
 var postgresDb = postgres
     .AddDatabase("PostgresRagDb");
-
 
 var migrations = builder.AddProject<Projects.MigrationService>("migrations")
     .WithReference(postgresDb)
