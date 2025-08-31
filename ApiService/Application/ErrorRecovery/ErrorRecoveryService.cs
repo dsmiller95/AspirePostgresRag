@@ -11,20 +11,13 @@ public interface IErrorRecoveryService
     Task<ErrorRecoveryResult> GetRecovery(ErrorRecoveryRequest request);
 }
 
-public partial class ErrorRecoveryService(ChatClient chatClient) : IErrorRecoveryService
+public partial class ErrorRecoveryService(ChatClient chatClient, ILogger<ErrorRecoveryService> logger) : IErrorRecoveryService
 {
     public async Task<ErrorRecoveryResult> GetRecovery(ErrorRecoveryRequest request)
     {
         var summary = GetErrorContentSummary(request);
-        return new ErrorRecoveryResult(418, JsonSerializer.Serialize(new
-        {
-            Error = "shits fucked",
-            Key = request.NormalizationKey,
-            Context = request.Context,
-            Summary = summary,
-            ExceptionType = request.Exception.GetType().FullName
-        }));
         
+        logger.LogInformation("Error summary:\n{Summary}", summary);
         
         var response = await chatClient.CompleteChatAsync(
             ChatMessage.CreateSystemMessage("You are an expert software engineer who helps to recover from errors in code."),
@@ -34,15 +27,16 @@ Given the following error information, provide a response in json format which r
 object, usable by our downstream clients. The response object should describe the error to clients of the api:
 if it is something they can fix then this should be clear. If it is something they cannot fix, this should also be clear.
 
-Respond in this format. this can be any json object, and it will be returned to the client. status is an integer HTTP status code.
+Respond in this format. This can be any json object, and it will be returned to the client.
+It must include a status key which is an integer HTTP status code.
 ```
 {
+  ""status"": 123,
   ""someKey"": ""someValue"",
   ""someObject"": {
     ""someNestedKey"": ""someNestedValue""
   }
 }
-Status: 123
 ```
 
 Following is the Error Information:
@@ -61,14 +55,11 @@ Provide a response in the specified format:
         if(!regexMatch.Success)
             throw new Exception("Invalid response format: Regex match failed");
         
-        var jsonStringFromRegex = regexMatch.Success ? regexMatch.Groups[1].Value : null;
-        var statusStringFromRegex = regexMatch.Success ? regexMatch.Groups[2].Value : null;
-        if (string.IsNullOrEmpty(jsonStringFromRegex) || string.IsNullOrEmpty(statusStringFromRegex) || !int.TryParse(statusStringFromRegex, out var statusFromRegex))
-        {
-            throw new Exception("Invalid response format: Unable to extract JSON or status code");
-        }
+        var jsonStringFromRegex = regexMatch.Groups[0].Value;
+        var statusCodeParsed = JsonSerializer.Deserialize<ResponseErrorCode>(jsonStringFromRegex);
+        var statusCode = statusCodeParsed?.status ?? 500;
 
-        return new ErrorRecoveryResult(statusFromRegex, jsonStringFromRegex);
+        return new ErrorRecoveryResult(statusCode, jsonStringFromRegex);
     }
     
     private string GetErrorContentSummary(ErrorRecoveryRequest request)
@@ -81,6 +72,10 @@ Provide a response in the specified format:
         """;
     }
 
-    [GeneratedRegex(@"({(?:.|\s)+})\s*Status: (\d+)")]
+    // ReSharper disable InconsistentNaming
+    private record ResponseErrorCode(int? status);
+    // ReSharper restore InconsistentNaming
+    
+    [GeneratedRegex(@"{(?:.|\s)+}")]
     private static partial Regex ResponseParseRegex();
 }
