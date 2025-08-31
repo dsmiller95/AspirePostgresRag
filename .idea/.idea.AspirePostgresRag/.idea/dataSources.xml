@@ -8,11 +8,11 @@
       <jdbc-url>jdbc:postgresql://localhost:5432/postgres</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
-    <data-source source="LOCAL" name="cache" uuid="09ca2f45-f5bc-4406-aeaa-6c44cb4dc193">
+    <data-source source="LOCAL" name="cache" uuid="57a91bb6-73e8-4358-8447-95828d3ccfee">
       <driver-ref>redis</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>jdbc.RedisDriver</jdbc-driver>
-      <jdbc-url>jdbc:redis://qPD0eJQagXjrQ3Wr822Ac5@localhost:63572</jdbc-url>
+      <jdbc-url>jdbc:redis://qPD0eJQagXjrQ3Wr822Ac5@localhost:64923</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

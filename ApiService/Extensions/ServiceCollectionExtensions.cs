@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using ApiService.Application.Ai;
+using ApiService.Application.Products;
 using ApiService.Application.Todos;
 using ApiService.Infrastructure.Ai;
 using ApiService.Options;
@@ -67,8 +68,9 @@ public static class ServiceCollectionExtensions
     
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
-        services.AddScoped<ITodoService, TodoService>();
         services.AddScoped<IEmbeddingService, AiEmbeddingService>();
+        services.AddScoped<ITodoService, TodoService>();
+        services.AddScoped<IProductService, ProductService>();
         
 
         return services;
