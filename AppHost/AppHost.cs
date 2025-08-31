@@ -1,11 +1,14 @@
 using Microsoft.Extensions.Hosting;
 
+const string PostgresDataVolumeName = "PostgresSqlDataVolume";
+const string OllamaDataVolumeName = "OllamaDataVolume";
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var cache = builder.AddRedis("cache");
 
 var postgres = builder.AddPostgres("PostgresSql")
-    .WithDataVolume("PostgresSqlDataVolume", isReadOnly: false)
+    .WithDataVolume(PostgresDataVolumeName, isReadOnly: false)
     .WithPgAdmin()
     // Use a custom container image that has pgvector installed
     .WithImage("ankane/pgvector", "latest")
@@ -28,9 +31,18 @@ var migrations = builder.AddProject<Projects.MigrationService>("migrations")
     .WithReference(postgresDb)
     .WaitFor(postgresDb);
 
+var ollama = builder.AddOllama("ollama")
+        .WithDataVolume(OllamaDataVolumeName, isReadOnly: false)
+        .WithContainerRuntimeArgs("--gpus=all")
+    ;
+
+var nomicEmbed = ollama.AddModel("nomic-embed-text:v1.5")
+    ;
+
 var apiService = builder.AddProject<Projects.ApiService>("apiservice")
     .WithReference(postgresDb).WaitFor(postgresDb)
     .WithReference(migrations).WaitFor(migrations)
+    .WithReference(nomicEmbed, "embed-text").WaitFor(nomicEmbed)
     .WithHttpHealthCheck("/health")
     ;
 

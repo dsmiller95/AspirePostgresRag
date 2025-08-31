@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Data.EntityConfigurations;
+namespace Data.TodoItems;
 
 class TodoDbItemEntityTypeConfiguration
     : IEntityTypeConfiguration<TodoDbItem>
@@ -25,6 +25,6 @@ class TodoDbItemEntityTypeConfiguration
         
         // length of 1536, openai text-embedding-3-small model
         builder.Property(x => x.Embedding)
-            .HasColumnType("vector(1536)");
+            .HasColumnType($"vector({VectorLengthCompatibilityWorkaround.EmbeddingLength})");
     }
 }

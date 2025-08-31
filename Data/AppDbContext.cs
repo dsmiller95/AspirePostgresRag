@@ -1,10 +1,10 @@
-﻿using Data.EntityConfigurations;
+﻿using Data.TodoItems;
 using Microsoft.EntityFrameworkCore;
 
 namespace Data;
 
 
-public class TodoDbContext(DbContextOptions<TodoDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<TodoDbItem> TodoItems => Set<TodoDbItem>();
 

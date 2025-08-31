@@ -1,4 +1,5 @@
-﻿using ApiService.Application.Ai;
+﻿using System.Diagnostics;
+using ApiService.Application.Ai;
 using ApiService.Application.Todos;
 using ApiService.Infrastructure.Ai;
 using ApiService.Options;
@@ -10,31 +11,64 @@ namespace ApiService.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddAi(this IServiceCollection services, IConfiguration configuration)
+    public static IHostApplicationBuilder AddAi(this IHostApplicationBuilder builder)
     {
-        services.AddOptions<AiOptions>().BindConfiguration("AI");
+        var provider = builder.Configuration.GetRequiredEnum<AiProvider>("AI:Provider");
+        switch (provider)
+        {
+            case AiProvider.OpenAi:
+                builder.Services.AddOptions<OpenAiApiOptions>().BindConfiguration("AI:OpenAi")
+                    .ValidateDataAnnotations()
+                    .ValidateOnStart();
+                builder.Services.AddOpenAi(builder.Configuration);
+                break;
+            case AiProvider.Ollama:
+                builder.Services.AddOptions<OllamaApiOptions>().BindConfiguration("AI:Ollama")
+                    .ValidateDataAnnotations()
+                    .ValidateOnStart();
+                builder.AddOllama();
+                break;
+            default:
+                throw new UnreachableException();
+        }
+        
+        return builder;
+    }
+
+    private static IServiceCollection AddOpenAi(this IServiceCollection services, IConfiguration configuration)
+    {
         services.AddSingleton<ChatClient>(serviceProvider =>
         {
-            var options = serviceProvider.GetRequiredService<IOptions<AiOptions>>().Value;
+            var options = serviceProvider.GetRequiredService<IOptions<OpenAiApiOptions>>().Value;
 
-            return new ChatClient(options.ChatModel, options.OpenAiApiKey);
+            return new ChatClient(options.ChatModel, options.ApiKey);
         });
         services.AddSingleton<EmbeddingClient>(serviceProvider =>
         {
-            var options = serviceProvider.GetRequiredService<IOptions<AiOptions>>().Value;
+            var options = serviceProvider.GetRequiredService<IOptions<OpenAiApiOptions>>().Value;
 
-            return new EmbeddingClient(options.EmbeddingModel, options.OpenAiApiKey);
+            return new EmbeddingClient(options.EmbeddingModel, options.ApiKey);
         });
         
+        services.AddScoped<IEmbeddingDao, OpenAiEmbeddingDao>();
+        
         return services;
+    }
+    
+    private static IHostApplicationBuilder AddOllama(this IHostApplicationBuilder builder)
+    {
+        builder.AddKeyedOllamaApiClient(
+            serviceKey: AiServiceKeys.EmbeddingClient,
+            connectionName: "embed-text");
+        builder.Services.AddScoped<IEmbeddingDao, OllamaEmbeddingDao>();
+        
+        return builder;
     }
     
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<ITodoService, TodoService>();
         services.AddScoped<IEmbeddingService, AiEmbeddingService>();
-        
-        services.AddScoped<IEmbeddingDao, OpenAiEmbeddingDao>();
         
 
         return services;

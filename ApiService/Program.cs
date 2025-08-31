@@ -15,7 +15,7 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 
 // Add service defaults & Aspire client integrations.
 builder.AddServiceDefaults();
-builder.AddNpgsqlDbContext<TodoDbContext>(connectionName: "PostgresRagDb", configureDbContextOptions: dbContextOptionsBuilder  =>
+builder.AddNpgsqlDbContext<AppDbContext>(connectionName: "PostgresRagDb", configureDbContextOptions: dbContextOptionsBuilder  =>
 {
     dbContextOptionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
     dbContextOptionsBuilder.UseNpgsql(npgBuilder =>
@@ -24,8 +24,8 @@ builder.AddNpgsqlDbContext<TodoDbContext>(connectionName: "PostgresRagDb", confi
     });
 });
 
+builder.AddAi();
 builder.Services
-    .AddAi(builder.Configuration)
     .AddApplicationServices();
 
 // Add services to the container.

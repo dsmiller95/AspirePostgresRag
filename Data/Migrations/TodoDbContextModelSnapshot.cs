@@ -10,7 +10,7 @@ using Pgvector;
 
 namespace Data.Migrations
 {
-    [DbContext(typeof(TodoDbContext))]
+    [DbContext(typeof(AppDbContext))]
     partial class TodoDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

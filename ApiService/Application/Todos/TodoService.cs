@@ -1,5 +1,6 @@
 ﻿using ApiService.Application.Ai;
 using Data;
+using Data.TodoItems;
 using Domain.TodoItems;
 using Microsoft.EntityFrameworkCore;
 using Pgvector;
@@ -18,7 +19,7 @@ public interface ITodoService
     Task<List<RankedTodoItem>> SearchTodos(string search);
 }
 
-public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) : ITodoService
+public class TodoService(AppDbContext db, IEmbeddingService embeddingService) : ITodoService
 {
     public async Task<List<TodoItem>> GetTodos()
     {
@@ -35,12 +36,7 @@ public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) :
     {
         var embedding = await embeddingService.GetEmbeddingAsync(todoItem.Title);
         
-        var dbItem = new TodoDbItem
-        {
-            Title = todoItem.Title,
-            IsCompleted = todoItem.IsCompleted,
-            Embedding = new Vector(embedding),
-        };
+        var dbItem = TodoDbItem.From(todoItem, new Vector(embedding));
         var added = db.TodoItems.Add(dbItem);
         await db.SaveChangesAsync();
         return added.Entity.ToDomain();
@@ -89,7 +85,7 @@ public class TodoService(TodoDbContext db, IEmbeddingService embeddingService) :
                 .ToList();
         }
         var embedding = await embeddingService.GetEmbeddingAsync(search);
-        var vector = new Vector(embedding);
+        var vector = new Vector(embedding).EnsureValidTextEmbedding();
         var results = await db.TodoItems
             .Select(x => new { DbItem = x, Distance = x.Embedding.L2Distance(vector) })
             .OrderBy(x => x.Distance)

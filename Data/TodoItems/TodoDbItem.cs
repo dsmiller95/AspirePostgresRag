@@ -1,10 +1,12 @@
 ﻿using Domain.TodoItems;
 using Pgvector;
 
-namespace Data;
+namespace Data.TodoItems;
 
 public class TodoDbItem
 {
+    private TodoDbItem() { }
+    
     public int Id { get; init; }
     public required string Title { get; init; }
     public required bool IsCompleted { get; init; } 
@@ -25,6 +27,16 @@ public class TodoDbItem
         };
     }
     
+    public static TodoDbItem From(CreateTodoItem createRequest, Vector embedding)
+    {
+        return new TodoDbItem
+        {
+            Title = createRequest.Title,
+            IsCompleted = createRequest.IsCompleted,
+            Embedding = embedding.EnsureValidTextEmbedding(),
+        };
+    }
+    
     public static TodoDbItem From(TodoItem item, Vector embedding)
     {
         return new TodoDbItem
@@ -32,7 +44,7 @@ public class TodoDbItem
             Id = item.Id,
             Title = item.Title,
             IsCompleted = item.IsCompleted,
-            Embedding = embedding,
+            Embedding = embedding.EnsureValidTextEmbedding(),
         };
     }
 }
