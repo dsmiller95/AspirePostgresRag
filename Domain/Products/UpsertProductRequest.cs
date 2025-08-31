@@ -1,9 +1,9 @@
 ﻿namespace Domain.Products;
 
-public record UpsertProduct(string UniqueSku, string Title, string ScrapedJson) : IHaveExample
+public record UpsertProductRequest(string UniqueSku, string Title, string ScrapedJson) : IHaveExample
 {
     public static object GetExample() => 
-        new UpsertProduct(
+        new UpsertProductRequest(
             "SKU12345",
             "Drill press", 
             @"""

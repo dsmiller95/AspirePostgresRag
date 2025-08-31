@@ -1,6 +1,7 @@
 ﻿using ApiService.Application.Ai;
 using Data;
 using Data.Products;
+using Domain;
 using Domain.Products;
 using Microsoft.EntityFrameworkCore;
 using Pgvector;
@@ -12,7 +13,7 @@ public interface IProductService
 {
     Task<List<Product>> GetProducts();
     Task<Product?> GetProduct(int id);
-    Task<Product> UpsertProduct(UpsertProduct product);
+    Task<UpsertProductResponse> UpsertProduct(UpsertProductRequest productRequest);
     Task<bool> DeleteProduct(int id);
     Task<List<RankedProduct>> SearchProducts(string search);
 }
@@ -30,35 +31,35 @@ public class ProductService(AppDbContext db, IEmbeddingService embeddingService)
         return item?.ToDomain();
     }
 
-    public async Task<Product> UpsertProduct(UpsertProduct product)
+    public async Task<UpsertProductResponse> UpsertProduct(UpsertProductRequest productRequest)
     {
         var existing = await db.Products
-            .FirstOrDefaultAsync(x => x.UniqueSku == product.UniqueSku);
+            .FirstOrDefaultAsync(x => x.UniqueSku == productRequest.UniqueSku);
         var existingProduct = existing?.ToDomain();
         
-        if (existingProduct != null && !product.HasChanges(existingProduct))
+        if (existingProduct != null && !productRequest.HasChanges(existingProduct))
         {
-            return existingProduct;
+            return new UpsertProductResponse(existingProduct, UpsertChangeType.Unchanged);
         }
         
-        var embedding = await embeddingService.GetEmbeddingAsync(product.ScrapedJson);
+        var embedding = await embeddingService.GetEmbeddingAsync(productRequest.ScrapedJson);
 
         if (existingProduct is null)
         {
-            var dbItem = ProductDb.From(product, new Vector(embedding));
+            var dbItem = ProductDb.From(productRequest, new Vector(embedding));
             var added = db.Products.Add(dbItem);
             await db.SaveChangesAsync();
 
-            return added.Entity.ToDomain();
+            return new UpsertProductResponse(added.Entity.ToDomain(), UpsertChangeType.Created);
         }
         else
         {
-            var updatedProduct = existingProduct with { Title = product.Title, ScrapedJson = product.ScrapedJson, };
+            var updatedProduct = existingProduct with { Title = productRequest.Title, ScrapedJson = productRequest.ScrapedJson, };
             var updatedItem = ProductDb.From(updatedProduct, new Vector(embedding));
             db.Products.Update(updatedItem);
             await db.SaveChangesAsync();
 
-            return updatedItem.ToDomain();
+            return new UpsertProductResponse(updatedItem.ToDomain(), UpsertChangeType.Updated);
         }
     }
 

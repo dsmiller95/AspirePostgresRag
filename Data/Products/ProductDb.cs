@@ -26,7 +26,7 @@ public class ProductDb
         };
     }
     
-    public static ProductDb From(UpsertProduct upsertRequest, Vector embedding)
+    public static ProductDb From(UpsertProductRequest upsertRequest, Vector embedding)
     {
         return new ProductDb
         {

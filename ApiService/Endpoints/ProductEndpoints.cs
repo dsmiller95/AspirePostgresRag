@@ -32,10 +32,10 @@ public static class ProductEndpoints
             return item is not null ? Results.Ok(item) : Results.NotFound();
         }).WithDefaults();
 
-        app.MapPut("/products", async ([FromServices] IProductService service, UpsertProduct item) =>
+        app.MapPut("/products", async ([FromServices] IProductService service, UpsertProductRequest item) =>
         {
             var added = await service.UpsertProduct(item);
-            return Results.Created($"/products/{added.Id}", added);
+            return Results.Created($"/products/{added.Record.Id}", added);
         }).WithDefaults();
 
         app.MapDelete("/products/{id:int}", async (int id, [FromServices] IProductService service) =>

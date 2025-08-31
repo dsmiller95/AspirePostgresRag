@@ -55,6 +55,7 @@ app
     .MapWeatherEndpoints()
     .MapTodoItemEndpoints()
     .MapProductEndpoints()
+    .MapWebScraperEndpoints()
     .MapDefaultEndpoints();
 
 app.Run();

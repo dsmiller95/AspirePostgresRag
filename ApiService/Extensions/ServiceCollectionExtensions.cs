@@ -2,6 +2,7 @@
 using ApiService.Application.Ai;
 using ApiService.Application.Products;
 using ApiService.Application.Todos;
+using ApiService.Application.WebScrapes;
 using ApiService.Infrastructure.Ai;
 using ApiService.Options;
 using Microsoft.Extensions.Options;
@@ -71,6 +72,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmbeddingService, AiEmbeddingService>();
         services.AddScoped<ITodoService, TodoService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IWebScrapeService, WebScrapeService>();
         
 
         return services;
